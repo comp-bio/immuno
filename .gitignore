@@ -1,0 +1,15 @@
+*.ipynb_checkpoints*
+.vscode/*
+.idea
+.DS_Store
+__*
+venv
+mhc_i
+draft
+NOTE.md
+*.tar.gz
+circ
+./netchop
+./ado
+./apo
+app/db
