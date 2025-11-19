@@ -124,7 +124,8 @@ def finder(state):
 def get_clusters(state):
     finder(state)
 
-    header = ['Cluster', 'Peptide', 'Score', 'Immunogenicity', 'TAP_score']
+    # header = ['Cluster', 'Peptide', 'Score', 'Immunogenicity', 'TAP_score']
+    header = ['Peptide', 'Score', 'Immunogenicity', 'TAP_score']
     header += state.allele_freq.keys()
     header += ['Locations', 'NetChop_score']
     result = "\t".join(header) + "\n"
@@ -132,7 +133,8 @@ def get_clusters(state):
     for k, cls in enumerate(state.cls):
         for p in cls:
             # Cluster, Pep, Score, Immuno
-            result += f"{k}\t{p}\t{state.pep[p]['score']:.5f}\t{state.pep[p]['imm']}\t"
+            result += f"{p}\t{state.pep[p]['score']:.5f}\t{state.pep[p]['imm']}\t"
+            # result += f"{k}\t{p}\t{state.pep[p]['score']:.5f}\t{state.pep[p]['imm']}\t"
             # TAP
             if len(p) > 8:
                 tap = state.tap[p[-9:]]

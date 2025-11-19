@@ -14,35 +14,30 @@ By filtering candidates based on immunogenicity first, Immuno significantly redu
 - Applies adaptive thresholding to skip affinity evaluation for weak candidates
 - Integrates with IEDB MHC-I tools for affinity prediction
 - Produces an integrated score and returns top candidates
-- Optional peptide clustering to avoid redundant peptides
 
 ## Algorithm Overview
 
-Immunogenicity (IM) is computationally inexpensive, while affinity (AF) requires calling external tools.  
-To optimize performance, Immuno uses an adaptive immunogenicity threshold $$T$$.
+The pipeline evaluates all possible peptides extracted from the input FASTA file.
+To reduce the number of affinity predictions, Immuno applies the following strategy.
 
-### 1. Initial filtering
+### 1. Immunogenicity computation and sorting
 
-A threshold $$T$$ is chosen (may be estimated using a binomial model).  
-All peptides with $$IM < T$$ are skipped at this stage.
+For every peptide, the immunogenicity (IM) score is computed first.
+All peptides are then sorted in descending order of immunogenicity.
 
-### 2. Affinity evaluation
+### 2. Iterative affinity evaluation
 
-Affinity is computed **only** for peptides with $$IM \ge T$$
+Affinity (AF) is computed only when needed, starting from peptides with the highest immunogenicity.
 
-### 3. Score upper bound
+### 3. Early stopping
 
-For any peptide with $$IM < T$$, the maximum possible integrated score is:  
-$$\delta = \frac{1}{4}\left(2 - \sqrt{2}(1 - T) + 2T\right)$$
+As peptides are processed in decreasing immunogenicity order, the algorithm keeps collecting peptides whose final integrated score satisfies the user-defined ranking criteria. If the required number of top peptides (defined by -n) is reached, the algorithm stops immediately.
 
-### 4. Early stopping
+### 4. Full evaluation fallback
 
-If enough peptides are found with $$score > \delta$$ the algorithm terminates early, because peptides with $$IM < T$$ cannot exceed this score.
-
-### 5. Threshold adjustment
-
-If not enough candidates exceed $$\delta$$, the threshold $$T$$ is reduced, and the process repeats.  
-This technique reduces the total number of affinity evaluations, accelerating large-scale peptide screening.
+If the algorithm reaches the end of the sorted list without obtaining the required number of top-scoring peptides:
+either the input sequence does not contain enough suitable candidates or the requested number of results (-n) is too large.
+In this case, all affinities will be computed, and the available candidates are returned.
 
 ## Installation
 
@@ -89,7 +84,6 @@ run.py -src <fasta> [-freq <file> OR -allele <Name>] [options]
 -model     [netmhcpan_el | netmhcpan_ba | consensus(default)]
 -dir       <output directory>
 -n         number of top results to return (10–1000, default 20)
--dist      clustering distance between peptides (0–1, default 0.15)
 -t         thread count
 ```
 
@@ -108,5 +102,4 @@ The tool generates:
 - Ranked peptide list
 - Integrated immunogenicity/affinity score
 - Affinity predictions for selected alleles
-- Optional clustering results
 - Summary statistics
